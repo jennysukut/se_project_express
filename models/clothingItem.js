@@ -35,7 +35,8 @@ const clothingItemSchema = new mongoose.Schema({
     default: [],
   },
   createdAt: {
-    // the item creation date, a field with the Date type and the default value Date.now
+    type: Date,
+    default: Date.now,
   },
 });
 

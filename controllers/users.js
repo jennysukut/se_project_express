@@ -1,4 +1,9 @@
 const User = require("../models/user");
+const {
+  invalidDataError,
+  nonexistentResourceError,
+  defaultError,
+} = require("../utils/errors");
 
 const getUsers = (req, res) => {
   User.find({})
@@ -7,23 +12,39 @@ const getUsers = (req, res) => {
     })
     .catch((err) => {
       console.error(err);
-      return res.status(500).send({ message: err.message });
+      console.log(err.name);
+      return res
+        .status(defaultError.status)
+        .send({ message: defaultError.message });
     });
 };
 
 const getUser = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
-    .orFail()
+    .orFail(() => {
+      const error = new Error("User ID not found");
+      error.statusCode = 404;
+      throw error;
+    })
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       console.error(err);
+      console.log(err.name);
       if (err.name === "DocumentNotFoundError") {
-        return res.status(404).send({ message: err.message });
+        return res.status(nonexistentResourceError.status).send({
+          message: nonexistentResourceError.message + " Try Searching Again?",
+        });
       } else if (err.name === "CastError") {
-        return res.status(400).send({ message: err.message });
+        return res.status(invalidDataError.status).send({
+          message:
+            invalidDataError.message +
+            " Make sure your search information is correct and try again.",
+        });
       } else {
-        return res.status(500).send({ message: err.message });
+        return res
+          .status(defaultError.status)
+          .send({ message: defaultError.message });
       }
     });
 };
@@ -35,7 +56,18 @@ const createUser = (req, res) => {
     .then((user) => res.status(201).send(user))
     .catch((err) => {
       console.error(err);
-      return res.status(500).send({ message: err.message });
+      console.log(err.name);
+      if (err.name === "ValidationError") {
+        return res.status(invalidDataError.status).send({
+          message:
+            invalidDataError.message +
+            " Username & Avatar must meet required parameters",
+        });
+      } else {
+        return res
+          .status(defaultError.status)
+          .send({ message: defaultError.message });
+      }
     });
 };
 
