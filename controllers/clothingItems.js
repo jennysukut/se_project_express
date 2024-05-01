@@ -50,10 +50,10 @@ const deleteClothingItem = (req, res) => {
   const { itemId } = req.params;
 
   ClothingItem.findByIdAndRemove(itemId)
-    // .orFail(() => {
-    // const error = new Error("Item ID not found");
-    // throw error;
-    // })
+    .orFail(() => {
+      const error = new Error("Item ID not found");
+      throw error;
+    })
     .then(() => res.status(200).send({ message: "Item Deleted" }))
     .catch((err) => {
       console.error(err);
