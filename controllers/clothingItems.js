@@ -3,6 +3,7 @@ const {
   invalidDataError,
   nonexistentResourceError,
   defaultError,
+  itemNotFoundError,
 } = require("../utils/errors");
 
 const getClothingItems = (req, res) => {
@@ -47,15 +48,13 @@ const createClothingItem = (req, res) => {
 const deleteClothingItem = (req, res) => {
   console.log("trying to delete item");
   const { itemId } = req.params;
-  console.log(itemId);
 
   ClothingItem.findByIdAndRemove(itemId)
     .orFail(() => {
       const error = new Error("Item ID not found");
-      error.statusCode = 404;
       throw error;
     })
-    .then(() => res.status(201).send("Item Deleted"))
+    .then(() => res.status(200).send({ message: "Item Deleted" }))
     .catch((err) => {
       console.error(err);
       console.log(err.name);
@@ -63,10 +62,15 @@ const deleteClothingItem = (req, res) => {
         return res
           .status(nonexistentResourceError.status)
           .send({ message: nonexistentResourceError.message });
+      } else if (err.name === "Error") {
+        return res
+          .status(itemNotFoundError.status)
+          .send({ message: itemNotFoundError.message });
+      } else {
+        return res.status(defaultError.status).send({
+          message: defaultError.message,
+        });
       }
-      return res.status(defaultError.status).send({
-        message: defaultError.message,
-      });
     });
 };
 

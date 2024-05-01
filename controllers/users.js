@@ -1,8 +1,8 @@
 const User = require("../models/user");
 const {
   invalidDataError,
-  nonexistentResourceError,
   defaultError,
+  userNotFoundError,
 } = require("../utils/errors");
 
 const getUsers = (req, res) => {
@@ -23,24 +23,17 @@ const getUser = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
     .orFail(() => {
-      const error = new Error("User ID not found");
-      error.statusCode = 404;
+      const error = new Error("CastError");
       throw error;
     })
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       console.error(err);
       console.log(err.name);
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(nonexistentResourceError.status).send({
-          message: nonexistentResourceError.message + " Try Searching Again?",
-        });
-      } else if (err.name === "CastError") {
-        return res.status(invalidDataError.status).send({
-          message:
-            invalidDataError.message +
-            " Make sure your search information is correct and try again.",
-        });
+      if (err.name === "Error") {
+        return res
+          .status(userNotFoundError.status)
+          .send({ message: userNotFoundError.message });
       } else {
         return res
           .status(defaultError.status)

@@ -4,7 +4,7 @@ const invalidDataError = {
 };
 
 const nonexistentResourceError = {
-  status: 404,
+  status: 400,
   message: "Requested resource not found.",
 };
 
@@ -13,4 +13,20 @@ const defaultError = {
   message: "An error has occurred on the server.",
 };
 
-module.exports = { invalidDataError, nonexistentResourceError, defaultError };
+const userNotFoundError = {
+  status: 404,
+  message: "User ID Not Found.",
+};
+
+const itemNotFoundError = {
+  status: 404,
+  message: "Item Not Found.",
+};
+
+module.exports = {
+  invalidDataError,
+  nonexistentResourceError,
+  defaultError,
+  userNotFoundError,
+  itemNotFoundError,
+};
