@@ -1,9 +1,8 @@
 const ClothingItem = require("../models/clothingItem");
 const {
   invalidDataError,
-  nonexistentResourceError,
   defaultError,
-  itemNotFoundError,
+  dataNotFoundError,
 } = require("../utils/errors");
 
 const getClothingItems = (req, res) => {
@@ -34,9 +33,7 @@ const createClothingItem = (req, res) => {
       console.log(err.name);
       if (err.name === "ValidationError") {
         return res.status(invalidDataError.status).send({
-          message:
-            invalidDataError.message +
-            " Make sure your information is correct and try again.",
+          message: invalidDataError.message,
         });
       }
       return res
@@ -60,17 +57,16 @@ const deleteClothingItem = (req, res) => {
       console.log(err.name);
       if (err.name === "CastError") {
         return res
-          .status(nonexistentResourceError.status)
-          .send({ message: nonexistentResourceError.message });
-      } else if (err.name === "Error") {
+          .status(invalidDataError.status)
+          .send({ message: invalidDataError.message });
+      } if (err.name === "Error") {
         return res
-          .status(itemNotFoundError.status)
-          .send({ message: itemNotFoundError.message });
-      } else {
-        return res.status(defaultError.status).send({
-          message: defaultError.message,
-        });
+          .status(dataNotFoundError.status)
+          .send({ message: dataNotFoundError.message });
       }
+      return res.status(defaultError.status).send({
+        message: defaultError.message,
+      });
     });
 };
 

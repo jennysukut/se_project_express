@@ -1,8 +1,8 @@
 const ClothingItem = require("../models/clothingItem");
 const {
-  nonexistentResourceError,
+  invalidDataError,
   defaultError,
-  itemNotFoundError,
+  dataNotFoundError,
 } = require("../utils/errors");
 
 const likeItem = (req, res) => {
@@ -29,12 +29,13 @@ const likeItem = (req, res) => {
       console.log(err.name);
       if (err.name === "CastError") {
         return res
-          .status(nonexistentResourceError.status)
-          .send({ message: nonexistentResourceError.message });
-      } else if (err.name === "Error") {
+          .status(invalidDataError.status)
+          .send({ message: invalidDataError.message });
+      }
+      if (err.name === "Error") {
         return res
-          .status(itemNotFoundError.status)
-          .send({ message: itemNotFoundError.message });
+          .status(dataNotFoundError.status)
+          .send({ message: dataNotFoundError.message });
       }
       return res.status(defaultError.status).send({
         message: defaultError.message,
@@ -48,7 +49,7 @@ const dislikeItem = (req, res) => {
 
   ClothingItem.findByIdAndUpdate(
     itemId,
-    { $pull: { likes: req.user._id } }, // remove _id from the array
+    { $pull: { likes: req.user._id } },
     { new: true }
   )
     .orFail(() => {
@@ -64,12 +65,13 @@ const dislikeItem = (req, res) => {
       console.log(err.name);
       if (err.name === "CastError") {
         return res
-          .status(nonexistentResourceError.status)
-          .send({ message: nonexistentResourceError.message });
-      } else if (err.name === "Error") {
+          .status(invalidDataError.status)
+          .send({ message: invalidDataError.message });
+      }
+      if (err.name === "Error") {
         return res
-          .status(itemNotFoundError.status)
-          .send({ message: itemNotFoundError.message });
+          .status(dataNotFoundError.status)
+          .send({ message: dataNotFoundError.message });
       }
       return res.status(defaultError.status).send({
         message: defaultError.message,

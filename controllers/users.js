@@ -2,7 +2,7 @@ const User = require("../models/user");
 const {
   invalidDataError,
   defaultError,
-  userNotFoundError,
+  dataNotFoundError,
 } = require("../utils/errors");
 
 const getUsers = (req, res) => {
@@ -23,7 +23,7 @@ const getUser = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
     .orFail(() => {
-      const error = new Error("CastError");
+      const error = new Error("UserNotFound");
       throw error;
     })
     .then((user) => res.status(200).send(user))
@@ -32,13 +32,17 @@ const getUser = (req, res) => {
       console.log(err.name);
       if (err.name === "Error") {
         return res
-          .status(userNotFoundError.status)
-          .send({ message: userNotFoundError.message });
-      } else {
+          .status(dataNotFoundError.status)
+          .send({ message: dataNotFoundError.message });
+      } if (err.name === "UserNotFound") {
+        return res.status(dataNotFoundError.status).send({
+          message: "User Not Found",
+        });
+      } 
         return res
           .status(defaultError.status)
           .send({ message: defaultError.message });
-      }
+      
     });
 };
 
@@ -53,14 +57,14 @@ const createUser = (req, res) => {
       if (err.name === "ValidationError") {
         return res.status(invalidDataError.status).send({
           message:
-            invalidDataError.message +
-            " Username & Avatar must meet required parameters",
+            `${invalidDataError.message 
+            } Username & Avatar must meet required parameters`,
         });
-      } else {
+      } 
         return res
           .status(defaultError.status)
           .send({ message: defaultError.message });
-      }
+      
     });
 };
 
