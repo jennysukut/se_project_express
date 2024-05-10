@@ -28,21 +28,14 @@ const getUser = (req, res) => {
     })
     .then((user) => res.status(200).send(user))
     .catch((err) => {
-      console.error(err);
-      console.log(err.name);
-      if (err.name === "Error") {
+      if (err.name === "CastError") {
         return res
           .status(dataNotFoundError.status)
           .send({ message: dataNotFoundError.message });
-      } if (err.name === "UserNotFound") {
-        return res.status(dataNotFoundError.status).send({
-          message: "User Not Found",
-        });
-      } 
-        return res
-          .status(defaultError.status)
-          .send({ message: defaultError.message });
-      
+      }
+      return res
+        .status(defaultError.status)
+        .send({ message: defaultError.message });
     });
 };
 
@@ -56,15 +49,12 @@ const createUser = (req, res) => {
       console.log(err.name);
       if (err.name === "ValidationError") {
         return res.status(invalidDataError.status).send({
-          message:
-            `${invalidDataError.message 
-            } Username & Avatar must meet required parameters`,
+          message: `${invalidDataError.message} Username & Avatar must meet required parameters`,
         });
-      } 
-        return res
-          .status(defaultError.status)
-          .send({ message: defaultError.message });
-      
+      }
+      return res
+        .status(defaultError.status)
+        .send({ message: defaultError.message });
     });
 };
 
