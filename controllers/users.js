@@ -30,6 +30,10 @@ const getUser = (req, res) => {
     .catch((err) => {
       if (err.name === "CastError") {
         return res
+          .status(invalidDataError.status)
+          .send({ message: invalidDataError.message });
+      } else if (err.name === "UserNotFound") {
+        return res
           .status(dataNotFoundError.status)
           .send({ message: dataNotFoundError.message });
       }
