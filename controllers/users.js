@@ -32,7 +32,8 @@ const getUser = (req, res) => {
         return res
           .status(invalidDataError.status)
           .send({ message: invalidDataError.message });
-      } else if (err.name === "UserNotFound") {
+      }
+      if (err.name === "Error") {
         return res
           .status(dataNotFoundError.status)
           .send({ message: dataNotFoundError.message });
