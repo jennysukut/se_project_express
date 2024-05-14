@@ -3,6 +3,11 @@ const invalidDataError = {
   message: "Error: Invalid Data.",
 };
 
+const invalidEmailOrPassError = {
+  status: 401,
+  message: "Invalid Username or Password.",
+};
+
 const defaultError = {
   status: 500,
   message: "An error has occurred on the server.",
@@ -17,4 +22,5 @@ module.exports = {
   invalidDataError,
   defaultError,
   dataNotFoundError,
+  invalidEmailOrPassError,
 };

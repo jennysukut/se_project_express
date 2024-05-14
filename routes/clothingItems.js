@@ -4,13 +4,10 @@ const {
   createClothingItem,
   deleteClothingItem,
 } = require("../controllers/clothingItems");
+const auth = require("../middlewares/auth");
 
 router.get("/", getClothingItems);
-router.post("/", createClothingItem);
-router.delete("/:itemId", deleteClothingItem);
+router.post("/", auth, createClothingItem);
+router.delete("/:itemId", auth, deleteClothingItem);
 
 module.exports = router;
-
-// GET /items — returns all clothing items
-// POST /items — creates a new item
-// DELETE /items/:itemId — deletes an item by _id
