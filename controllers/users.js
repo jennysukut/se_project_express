@@ -127,6 +127,7 @@ const getUser = (req, res) => {
 
 const createUser = (req, res) => {
   console.log("trying to create a user");
+
   const { name, avatar, email } = req.body;
   console.log(name, avatar, email);
 
