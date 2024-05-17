@@ -161,33 +161,48 @@ const createUser = (req, res) => {
         .status(duplicateError.status)
         .send({ message: duplicateError.message });
     }
+    bcrypt.hash(req.body.password, 10).then((hash) =>
+      User.create({ name, avatar, email, password: hash })
+        .then((user) =>
+          res
+            .status(201)
+            .send({ name: user.name, email: user.email, avatar: user.avatar })
+        )
+        .catch((err) => {
+          console.error(err);
+          console.log(err.name);
+          if (err.name === "ValidationError") {
+            return res.status(invalidDataError.status).send({
+              message: `${invalidDataError.message} Information must meet required parameters`,
+            });
+          }
+          return res
+            .status(defaultError.status)
+            .send({ message: defaultError.message });
+        })
+    );
   });
 
-  bcrypt.hash(req.body.password, 10).then((hash) =>
-    User.create({ name, avatar, email, password: hash })
-      .then((user) =>
-        res
-          .status(201)
-          .send({ name: user.name, email: user.email, avatar: user.avatar })
-      )
-      .catch((err) => {
-        console.error(err);
-        console.log(err.name);
-        if (err.name === "ValidationError") {
-          return res.status(invalidDataError.status).send({
-            message: `${invalidDataError.message} Information must meet required parameters`,
-          });
-        }
-        if (err.name === "Error") {
-          return res
-            .status(400)
-            .send({ message: "Email address already in use" });
-        }
-        return res
-          .status(defaultError.status)
-          .send({ message: defaultError.message });
-      })
-  );
+  // bcrypt.hash(req.body.password, 10).then((hash) =>
+  //   User.create({ name, avatar, email, password: hash })
+  //     .then((user) =>
+  //       res
+  //         .status(201)
+  //         .send({ name: user.name, email: user.email, avatar: user.avatar })
+  //     )
+  //     .catch((err) => {
+  //       console.error(err);
+  //       console.log(err.name);
+  //       if (err.name === "ValidationError") {
+  //         return res.status(invalidDataError.status).send({
+  //           message: `${invalidDataError.message} Information must meet required parameters`,
+  //         });
+  //       }
+  //       return res
+  //         .status(defaultError.status)
+  //         .send({ message: defaultError.message });
+  //     })
+  // );
 };
 
 module.exports = {
