@@ -18,9 +18,15 @@ const dataNotFoundError = {
   message: "Data Not Found - testing test",
 };
 
+const duplicateError = {
+  status: 409,
+  message: "An account for this email already exists.",
+};
+
 module.exports = {
   invalidDataError,
   defaultError,
   dataNotFoundError,
   invalidEmailOrPassError,
+  duplicateError,
 };

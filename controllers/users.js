@@ -4,6 +4,7 @@ const {
   defaultError,
   dataNotFoundError,
   invalidEmailOrPassError,
+  duplicateError,
 } = require("../utils/errors");
 
 const bcrypt = require("bcryptjs");
@@ -14,23 +15,31 @@ const login = (req, res) => {
   console.log("trying to log in");
   const { email, password } = req.body;
 
+  if (!email || !password) {
+    return res.status(invalidDataError.status).send({
+      message: `${invalidDataError.message} Username and password are required.`,
+    });
+  }
+
   User.findOne({ email })
     .select("+password")
     .then((user) => {
       if (!user) {
         return Promise.reject(new Error("Incorrect email or password"));
       }
-      return bcrypt.compare(password, user.password);
-    })
-    .then((matched) => {
-      if (!matched) {
-        return Promise.reject(new Error("Incorrect email or password"));
-      }
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-        expiresIn: "7d",
+      return bcrypt.compare(password, user.password).then((matched) => {
+        if (!matched) {
+          return Promise.reject(new Error("Incorrect email or password"));
+        }
+
+        console.log(user);
+        const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+          expiresIn: "7d",
+        });
+        res.send({ token });
       });
-      res.send(token);
     })
+
     .catch((err) => {
       console.log(err);
       res
@@ -41,10 +50,14 @@ const login = (req, res) => {
 
 const getCurrentUser = (req, res) => {
   console.log("trying to get current user");
+  const { _id } = req.user;
+  console.log(_id);
 
-  const { _id } = req.body;
   User.find({ _id })
-    .then((user) => res.send(user))
+    .then((user) => {
+      //need to get the information and send it as a JSON object - right now it's wrapped in square brackets
+      res.send(user);
+    }) //it's coming back as not a deep copy? See what that's about
     .catch((err) => {
       console.log(err);
       res
@@ -55,16 +68,21 @@ const getCurrentUser = (req, res) => {
 
 const updateProfile = (req, res) => {
   console.log("trying to update profile");
-  const { name, avatar, _id } = req.body;
+
+  const { name, avatar } = req.body;
+  const { _id } = req.user;
+  console.log(name, avatar, _id);
+
   User.find({ _id })
     .then((user) => {
+      console.log(user);
       if (name === !user.name) {
         findOneAndUpdate(name, { new: true });
       }
       if (avatar === !user.avatar) {
         findOneAndUpdate(avatar, { new: true, runValidator: true });
       }
-      return user;
+      return res.status(200).send({ user });
     })
     .catch((err) => {
       console.log(err);
@@ -131,19 +149,33 @@ const createUser = (req, res) => {
   const { name, avatar, email } = req.body;
   console.log(name, avatar, email);
 
+  if (!email) {
+    return res
+      .status(invalidDataError.status)
+      .send({ message: invalidDataError.message });
+  }
+
+  User.findOne({ email }).then((user) => {
+    if (user) {
+      return res
+        .status(duplicateError.status)
+        .send({ message: duplicateError.message });
+    }
+  });
+
   bcrypt.hash(req.body.password, 10).then((hash) =>
     User.create({ name, avatar, email, password: hash })
-      .orFail(() => {
-        const error = new Error("Email address already in use");
-        throw error;
-      })
-      .then((user) => res.status(201).send(user))
+      .then((user) =>
+        res
+          .status(201)
+          .send({ name: user.name, email: user.email, avatar: user.avatar })
+      )
       .catch((err) => {
         console.error(err);
         console.log(err.name);
         if (err.name === "ValidationError") {
           return res.status(invalidDataError.status).send({
-            message: `${invalidDataError.message} Username & Avatar must meet required parameters`,
+            message: `${invalidDataError.message} Information must meet required parameters`,
           });
         }
         if (err.name === "Error") {
