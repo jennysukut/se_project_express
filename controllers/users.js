@@ -1,3 +1,7 @@
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const { JWT_SECRET } = require("../utils/config");
+
 const User = require("../models/user");
 const {
   invalidDataError,
@@ -6,10 +10,6 @@ const {
   invalidEmailOrPassError,
   duplicateError,
 } = require("../utils/errors");
-
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const { JWT_SECRET } = require("../utils/config");
 
 const login = (req, res) => {
   console.log("trying to log in");
@@ -55,9 +55,8 @@ const getCurrentUser = (req, res) => {
 
   User.find({ _id })
     .then((user) => {
-      //need to get the information and send it as a JSON object - right now it's wrapped in square brackets
       res.send(user);
-    }) //it's coming back as not a deep copy? See what that's about
+    })
     .catch((err) => {
       console.log(err);
       res
@@ -161,48 +160,48 @@ const createUser = (req, res) => {
         .status(duplicateError.status)
         .send({ message: duplicateError.message });
     }
-    bcrypt.hash(req.body.password, 10).then((hash) =>
-      User.create({ name, avatar, email, password: hash })
-        .then((user) =>
-          res
-            .status(201)
-            .send({ name: user.name, email: user.email, avatar: user.avatar })
-        )
-        .catch((err) => {
-          console.error(err);
-          console.log(err.name);
-          if (err.name === "ValidationError") {
-            return res.status(invalidDataError.status).send({
-              message: `${invalidDataError.message} Information must meet required parameters`,
-            });
-          }
-          return res
-            .status(defaultError.status)
-            .send({ message: defaultError.message });
-        })
-    );
+    // bcrypt.hash(req.body.password, 10).then((hash) =>
+    //   User.create({ name, avatar, email, password: hash })
+    //     .then((user) =>
+    //       res
+    //         .status(201)
+    //         .send({ name: user.name, email: user.email, avatar: user.avatar })
+    //     )
+    //     .catch((err) => {
+    //       console.error(err);
+    //       console.log(err.name);
+    //       if (err.name === "ValidationError") {
+    //         return res.status(invalidDataError.status).send({
+    //           message: `${invalidDataError.message} Information must meet required parameters`,
+    //         });
+    //       }
+    //       return res
+    //         .status(defaultError.status)
+    //         .send({ message: defaultError.message });
+    //     })
+    // );
   });
 
-  // bcrypt.hash(req.body.password, 10).then((hash) =>
-  //   User.create({ name, avatar, email, password: hash })
-  //     .then((user) =>
-  //       res
-  //         .status(201)
-  //         .send({ name: user.name, email: user.email, avatar: user.avatar })
-  //     )
-  //     .catch((err) => {
-  //       console.error(err);
-  //       console.log(err.name);
-  //       if (err.name === "ValidationError") {
-  //         return res.status(invalidDataError.status).send({
-  //           message: `${invalidDataError.message} Information must meet required parameters`,
-  //         });
-  //       }
-  //       return res
-  //         .status(defaultError.status)
-  //         .send({ message: defaultError.message });
-  //     })
-  // );
+  bcrypt.hash(req.body.password, 10).then((hash) =>
+    User.create({ name, avatar, email, password: hash })
+      .then((user) =>
+        res
+          .status(201)
+          .send({ name: user.name, email: user.email, avatar: user.avatar })
+      )
+      .catch((err) => {
+        console.error(err);
+        console.log(err.name);
+        if (err.name === "ValidationError") {
+          return res.status(invalidDataError.status).send({
+            message: `${invalidDataError.message} Information must meet required parameters`,
+          });
+        }
+        return res
+          .status(defaultError.status)
+          .send({ message: defaultError.message });
+      })
+  );
 };
 
 module.exports = {
