@@ -36,7 +36,7 @@ const login = (req, res) => {
         const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
           expiresIn: "7d",
         });
-        res.send({ token });
+        return res.send({ token });
       });
     })
 
@@ -52,6 +52,7 @@ const login = (req, res) => {
         .status(defaultError.status)
         .send({ message: defaultError.message });
     });
+  return res.status(200);
 };
 
 const getCurrentUser = (req, res) => {
@@ -83,9 +84,7 @@ const updateProfile = (req, res) => {
     { name, avatar },
     { new: true, runValidator: true }
   )
-    .then((user) => {
-      return res.status(200).send({ user });
-    })
+    .then((user) => res.status(200).send({ user }))
     .catch((err) => {
       console.log(err);
       if (err.name === "CastError") {
@@ -122,26 +121,7 @@ const createUser = (req, res) => {
         .status(duplicateError.status)
         .send({ message: duplicateError.message });
     }
-    // bcrypt.hash(req.body.password, 10).then((hash) =>
-    //   User.create({ name, avatar, email, password: hash })
-    //     .then((user) =>
-    //       res
-    //         .status(201)
-    //         .send({ name: user.name, email: user.email, avatar: user.avatar })
-    //     )
-    //     .catch((err) => {
-    //       console.error(err);
-    //       console.log(err.name);
-    //       if (err.name === "ValidationError") {
-    //         return res.status(invalidDataError.status).send({
-    //           message: `${invalidDataError.message} Information must meet required parameters`,
-    //         });
-    //       }
-    //       return res
-    //         .status(defaultError.status)
-    //         .send({ message: defaultError.message });
-    //     })
-    // );
+    return res.status(200);
   });
 
   return bcrypt
@@ -168,11 +148,9 @@ const createUser = (req, res) => {
             .send({ message: defaultError.message });
         })
     )
-    .catch(() => {
-      return res
-        .status(defaultError.status)
-        .send({ message: defaultError.message });
-    });
+    .catch(() =>
+      res.status(defaultError.status).send({ message: defaultError.message })
+    );
 };
 
 module.exports = {

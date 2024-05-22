@@ -1,5 +1,4 @@
 const ClothingItem = require("../models/clothingItem");
-const { findById } = require("../models/user");
 const {
   invalidDataError,
   defaultError,
@@ -58,7 +57,7 @@ const deleteClothingItem = (req, res) => {
       }
       return item
         .deleteOne()
-        .then((res) => res.status(200).send({ message: "Item Deleted" }));
+        .then(() => res.status(200).send({ message: "Item Deleted" }));
     })
     .catch((err) => {
       console.error(err);

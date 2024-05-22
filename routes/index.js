@@ -15,7 +15,7 @@ router.use((req, res) =>
     .status(dataNotFoundError.status)
     .send({
       message:
-        "Error here with the main routing" /*message: dataNotFoundError.message*/,
+        "Error here with the main routing" /* message: dataNotFoundError.message */,
     })
 );
 
