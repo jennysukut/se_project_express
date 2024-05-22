@@ -1,8 +1,10 @@
 const ClothingItem = require("../models/clothingItem");
+const { findById } = require("../models/user");
 const {
   invalidDataError,
   defaultError,
   dataNotFoundError,
+  forbiddenError,
 } = require("../utils/errors");
 
 const getClothingItems = (req, res) => {
@@ -44,37 +46,67 @@ const createClothingItem = (req, res) => {
 
 const deleteClothingItem = (req, res) => {
   console.log("trying to delete item");
-  const { itemId, owner, _id } = req.params;
+  const { itemId } = req.params;
 
-  if (owner === _id) {
-    ClothingItem.findByIdAndRemove(itemId)
-      .orFail(() => {
-        const error = new Error("Item ID not found");
-        throw error;
-      })
-      .then(() => res.status(200).send({ message: "Item Deleted" }))
-      .catch((err) => {
-        console.error(err);
-        console.log(err.name);
-        if (err.name === "CastError") {
-          return res
-            .status(invalidDataError.status)
-            .send({ message: invalidDataError.message });
-        }
-        if (err.name === "Error") {
-          return res
-            .status(dataNotFoundError.status)
-            .send({ message: dataNotFoundError.message });
-        }
-        return res.status(defaultError.status).send({
-          message: defaultError.message,
-        });
+  ClothingItem.findById(itemId)
+    .orFail()
+    .then((item) => {
+      if (String(item.owner) !== req.user._id) {
+        return res
+          .status(forbiddenError)
+          .send({ messaage: forbiddenError.message });
+      }
+      return item
+        .deleteOne()
+        .then((res) => res.status(200).send({ message: "Item Deleted" }));
+    })
+    .catch((err) => {
+      console.error(err);
+      console.log(err.name);
+      if (err.name === "CastError") {
+        return res
+          .status(invalidDataError.status)
+          .send({ message: invalidDataError.message });
+      }
+      if (err.name === "DocumentNotFoundError") {
+        return res
+          .status(dataNotFoundError.status)
+          .send({ message: dataNotFoundError.message });
+      }
+      return res.status(defaultError.status).send({
+        message: defaultError.message,
       });
-  }
-  if (owner === !_id) {
-    console.log("You're not the owner of this item");
-    return res.status(403);
-  }
+    });
+
+  // if (owner === _id) {
+  //   ClothingItem.findByIdAndRemove(itemId)
+  //     .orFail(() => {
+  //       const error = new Error("Item ID not found");
+  //       throw error;
+  //     })
+  //     .then(() => res.status(200).send({ message: "Item Deleted" }))
+  //     .catch((err) => {
+  //       console.error(err);
+  //       console.log(err.name);
+  //       if (err.name === "CastError") {
+  //         return res
+  //           .status(invalidDataError.status)
+  //           .send({ message: invalidDataError.message });
+  //       }
+  //       if (err.name === "Error") {
+  //         return res
+  //           .status(dataNotFoundError.status)
+  //           .send({ message: dataNotFoundError.message });
+  //       }
+  //       return res.status(defaultError.status).send({
+  //         message: defaultError.message,
+  //       });
+  //     });
+  // }
+  // if (owner === !_id) {
+  //   console.log("You're not the owner of this item");
+  //   return res.status(403);
+  // }
 };
 
 module.exports = { getClothingItems, createClothingItem, deleteClothingItem };

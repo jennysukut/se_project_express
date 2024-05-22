@@ -1,12 +1,15 @@
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/config");
+const { invalidEmailOrPassError } = require("../utils/errors");
 
 const auth = (req, res, next) => {
   const { authorization } = req.headers;
   console.log(authorization);
 
   if (!authorization || !authorization.startsWith("Bearer")) {
-    return res.status(401).send({ message: "Authorization Required" });
+    return res
+      .status(invalidEmailOrPassError.status)
+      .send({ message: invalidEmailOrPassError.message });
   }
 
   const token = authorization.replace("Bearer ", "");
@@ -17,9 +20,8 @@ const auth = (req, res, next) => {
     console.log("trying at jwt verify");
     payload = jwt.verify(token, JWT_SECRET);
   } catch (err) {
-    return res.status(401).send({
-      message:
-        "Authorization Required - there was an issue with jwt verification",
+    return res.status(invalidEmailOrPassError.status).send({
+      message: invalidEmailOrPassError.message,
     });
   }
   console.log(payload);

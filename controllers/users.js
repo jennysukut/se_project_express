@@ -42,9 +42,15 @@ const login = (req, res) => {
 
     .catch((err) => {
       console.log(err);
-      res
-        .status(invalidEmailOrPassError.status)
-        .send({ message: invalidEmailOrPassError.message });
+      if (err.message === "Incorrect email or password") {
+        return res
+          .status(invalidEmailOrPassError.status)
+          .send({ message: invalidEmailOrPassError.message });
+      }
+
+      return res
+        .status(defaultError.status)
+        .send({ message: defaultError.message });
     });
 };
 
@@ -72,15 +78,12 @@ const updateProfile = (req, res) => {
   const { _id } = req.user;
   console.log(name, avatar, _id);
 
-  User.find({ _id })
+  User.findByIdAndUpdate(
+    _id,
+    { name, avatar },
+    { new: true, runValidator: true }
+  )
     .then((user) => {
-      console.log(user);
-      if (name === !user.name) {
-        findOneAndUpdate(name, { new: true });
-      }
-      if (avatar === !user.avatar) {
-        findOneAndUpdate(avatar, { new: true, runValidator: true });
-      }
       return res.status(200).send({ user });
     })
     .catch((err) => {
@@ -94,47 +97,6 @@ const updateProfile = (req, res) => {
         return res.status(invalidDataError.status).send({
           message: invalidDataError.message,
         });
-      }
-      return res
-        .status(defaultError.status)
-        .send({ message: defaultError.message });
-    });
-};
-
-const getUsers = (req, res) => {
-  console.log("trying to get users");
-  User.find({})
-    .then((users) => {
-      res.status(200).send(users);
-    })
-    .catch((err) => {
-      console.error(err);
-      console.log(err.name);
-      return res
-        .status(defaultError.status)
-        .send({ message: defaultError.message });
-    });
-};
-
-const getUser = (req, res) => {
-  console.log("trying to find a user");
-  const { userId } = req.params;
-  User.findById(userId)
-    .orFail(() => {
-      const error = new Error("UserNotFound");
-      throw error;
-    })
-    .then((user) => res.status(200).send(user))
-    .catch((err) => {
-      if (err.name === "CastError") {
-        return res
-          .status(invalidDataError.status)
-          .send({ message: invalidDataError.message });
-      }
-      if (err.name === "Error") {
-        return res
-          .status(dataNotFoundError.status)
-          .send({ message: dataNotFoundError.message });
       }
       return res
         .status(defaultError.status)
@@ -182,31 +144,38 @@ const createUser = (req, res) => {
     // );
   });
 
-  bcrypt.hash(req.body.password, 10).then((hash) =>
-    User.create({ name, avatar, email, password: hash })
-      .then((user) =>
-        res
-          .status(201)
-          .send({ name: user.name, email: user.email, avatar: user.avatar })
-      )
-      .catch((err) => {
-        console.error(err);
-        console.log(err.name);
-        if (err.name === "ValidationError") {
-          return res.status(invalidDataError.status).send({
-            message: `${invalidDataError.message} Information must meet required parameters`,
-          });
-        }
-        return res
-          .status(defaultError.status)
-          .send({ message: defaultError.message });
-      })
-  );
+  return bcrypt
+    .hash(req.body.password, 10)
+    .then((hash) =>
+      User.create({ name, avatar, email, password: hash })
+        .then((newUser) =>
+          res.status(201).send({
+            name: newUser.name,
+            email: newUser.email,
+            avatar: newUser.avatar,
+          })
+        )
+        .catch((err) => {
+          console.error(err);
+          console.log(err.name);
+          if (err.name === "ValidationError") {
+            return res.status(invalidDataError.status).send({
+              message: `${invalidDataError.message} Information must meet required parameters`,
+            });
+          }
+          return res
+            .status(defaultError.status)
+            .send({ message: defaultError.message });
+        })
+    )
+    .catch(() => {
+      return res
+        .status(defaultError.status)
+        .send({ message: defaultError.message });
+    });
 };
 
 module.exports = {
-  getUsers,
-  getUser,
   createUser,
   login,
   getCurrentUser,

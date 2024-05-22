@@ -8,6 +8,11 @@ const invalidEmailOrPassError = {
   message: "Invalid Username or Password.",
 };
 
+const forbiddenError = {
+  status: 403,
+  message: "This action is not authorized.",
+};
+
 const defaultError = {
   status: 500,
   message: "An error has occurred on the server.",
@@ -15,7 +20,7 @@ const defaultError = {
 
 const dataNotFoundError = {
   status: 404,
-  message: "Data Not Found - testing test",
+  message: "Data Not Found",
 };
 
 const duplicateError = {
@@ -29,4 +34,5 @@ module.exports = {
   dataNotFoundError,
   invalidEmailOrPassError,
   duplicateError,
+  forbiddenError,
 };
