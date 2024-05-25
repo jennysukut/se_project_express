@@ -52,7 +52,7 @@ const deleteClothingItem = (req, res) => {
     .then((item) => {
       if (String(item.owner) !== req.user._id) {
         return res
-          .status(forbiddenError)
+          .status(forbiddenError.status)
           .send({ messaage: forbiddenError.message });
       }
       return item

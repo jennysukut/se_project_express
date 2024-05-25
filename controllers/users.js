@@ -52,7 +52,6 @@ const login = (req, res) => {
         .status(defaultError.status)
         .send({ message: defaultError.message });
     });
-  return res.status(200);
 };
 
 const getCurrentUser = (req, res) => {
@@ -60,15 +59,21 @@ const getCurrentUser = (req, res) => {
   const { _id } = req.user;
   console.log(_id);
 
-  User.find({ _id })
+  User.findById({ _id })
+    .orFail()
     .then((user) => {
       res.send(user);
     })
     .catch((err) => {
       console.log(err);
-      res
-        .status(dataNotFoundError.status)
-        .send({ message: dataNotFoundError.message });
+      if (err.name === "DocumentNotFoundError") {
+        return res
+          .status(dataNotFoundError.status)
+          .send({ message: dataNotFoundError.message });
+      }
+      return res
+        .status(defaultError.status)
+        .send({ message: defaultError.message });
     });
 };
 
@@ -115,39 +120,35 @@ const createUser = (req, res) => {
       .send({ message: invalidDataError.message });
   }
 
-  User.findOne({ email }).then((user) => {
-    if (user) {
-      return res
-        .status(duplicateError.status)
-        .send({ message: duplicateError.message });
-    }
-    return res.status(200);
-  });
-
-  return bcrypt
-    .hash(req.body.password, 10)
-    .then((hash) =>
-      User.create({ name, avatar, email, password: hash })
-        .then((newUser) =>
+  User.findOne({ email })
+    .then((user) => {
+      if (user) {
+        return res
+          .status(duplicateError.status)
+          .send({ message: duplicateError.message });
+      }
+      return bcrypt.hash(req.body.password, 10).then((hash) =>
+        User.create({ name, avatar, email, password: hash }).then((newUser) =>
           res.status(201).send({
             name: newUser.name,
             email: newUser.email,
             avatar: newUser.avatar,
           })
         )
-        .catch((err) => {
-          console.error(err);
-          console.log(err.name);
-          if (err.name === "ValidationError") {
-            return res.status(invalidDataError.status).send({
-              message: `${invalidDataError.message} Information must meet required parameters`,
-            });
-          }
-          return res
-            .status(defaultError.status)
-            .send({ message: defaultError.message });
-        })
-    )
+      );
+    })
+    .catch((err) => {
+      console.error(err);
+      console.log(err.name);
+      if (err.name === "ValidationError") {
+        return res.status(invalidDataError.status).send({
+          message: `${invalidDataError.message} Information must meet required parameters`,
+        });
+      }
+      return res
+        .status(defaultError.status)
+        .send({ message: defaultError.message });
+    })
     .catch(() =>
       res.status(defaultError.status).send({ message: defaultError.message })
     );
