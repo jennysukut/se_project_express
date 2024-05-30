@@ -21,7 +21,7 @@ const login = (req, res) => {
     });
   }
 
-  User.findOne({ email })
+  return User.findOne({ email })
     .select("+password")
     .then((user) => {
       if (!user) {
@@ -120,7 +120,7 @@ const createUser = (req, res) => {
       .send({ message: invalidDataError.message });
   }
 
-  User.findOne({ email })
+  return User.findOne({ email })
     .then((user) => {
       if (user) {
         return res
