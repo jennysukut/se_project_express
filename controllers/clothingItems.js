@@ -7,8 +7,6 @@ const {
 } = require("../utils/errors");
 
 const getClothingItems = (req, res) => {
-  console.log("trying to get items");
-
   ClothingItem.find({})
     .then((items) => {
       res.status(200).send(items);

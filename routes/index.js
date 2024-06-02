@@ -10,13 +10,12 @@ router.use("/items", clothingItemsRouter);
 router.use("/items", likesRouter);
 router.use("/", signRouter);
 
-router.use((req, res) =>
-  res
-    .status(dataNotFoundError.status)
-    .send({
-      message:
-        "Error here with the main routing" /* message: dataNotFoundError.message */,
-    })
-);
+router.use((req, res) => {
+  console.log(req);
+  res.status(dataNotFoundError.status).send({
+    message:
+      "Error here with the main routing" /* message: dataNotFoundError.message */,
+  });
+});
 
 module.exports = router;

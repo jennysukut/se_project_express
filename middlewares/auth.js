@@ -3,6 +3,7 @@ const { JWT_SECRET } = require("../utils/config");
 const { invalidEmailOrPassError } = require("../utils/errors");
 
 const auth = (req, res, next) => {
+  console.log("trying auth");
   const { authorization } = req.headers;
   console.log(authorization);
 
