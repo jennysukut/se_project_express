@@ -1,3 +1,3 @@
-const JWT_SECRET = "supercalifragilisticexpialedoshis";
+const { JWT_SECRET = "supercalifragilisticexpialedoshis" } = process.env;
 
 module.exports = { JWT_SECRET };

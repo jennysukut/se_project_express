@@ -1,3 +1,5 @@
+const BadRequestError = require("../errors/bad-request-err");
+const NotFoundError = require("../errors/not-found-err");
 const ClothingItem = require("../models/clothingItem");
 const {
   invalidDataError,
@@ -28,18 +30,22 @@ const likeItem = (req, res) => {
       console.error(err);
       console.log(err.name);
       if (err.name === "CastError") {
-        return res
-          .status(invalidDataError.status)
-          .send({ message: invalidDataError.message });
+        next(new BadRequestError("Error: Invalid Data"));
+        // return res
+        //   .status(invalidDataError.status)
+        //   .send({ message: invalidDataError.message });
       }
       if (err.name === "Error") {
-        return res
-          .status(dataNotFoundError.status)
-          .send({ message: dataNotFoundError.message });
+        next(new NotFoundError("Data Not Found"));
+        // return res
+        //   .status(dataNotFoundError.status)
+        //   .send({ message: dataNotFoundError.message });
+      } else {
+        next(err);
       }
-      return res.status(defaultError.status).send({
-        message: defaultError.message,
-      });
+      // return res.status(defaultError.status).send({
+      //   message: defaultError.message,
+      // });
     });
 };
 
@@ -64,18 +70,22 @@ const dislikeItem = (req, res) => {
       console.error(err);
       console.log(err.name);
       if (err.name === "CastError") {
-        return res
-          .status(invalidDataError.status)
-          .send({ message: invalidDataError.message });
+        next(new BadRequestError("Error: Invalid Data"));
+        // return res
+        //   .status(invalidDataError.status)
+        //   .send({ message: invalidDataError.message });
       }
       if (err.name === "Error") {
-        return res
-          .status(dataNotFoundError.status)
-          .send({ message: dataNotFoundError.message });
+        next(new NotFoundError("Data Not Found"));
+        // return res
+        //   .status(dataNotFoundError.status)
+        //   .send({ message: dataNotFoundError.message });
+      } else {
+        next(err);
       }
-      return res.status(defaultError.status).send({
-        message: defaultError.message,
-      });
+      // return res.status(defaultError.status).send({
+      //   message: defaultError.message,
+      // });
     });
 };
 

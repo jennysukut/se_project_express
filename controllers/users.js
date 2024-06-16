@@ -11,25 +11,36 @@ const {
   duplicateError,
 } = require("../utils/errors");
 
+const BadRequestError = require("../errors/bad-request-err");
+const ConflictError = require("../errors/conflict-err");
+const ForbiddenError = require("../errors/forbidden-err");
+const NotFoundError = require("../errors/not-found-err");
+const UnauthorizedError = require("../errors/unauthorized-err");
+
 const login = (req, res) => {
   console.log("trying to log in");
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(invalidDataError.status).send({
-      message: `${invalidDataError.message} Username and password are required.`,
-    });
+    throw new BadRequestError("Username and password are required");
+    // return res.status(invalidDataError.status).send({
+    //   message: `${invalidDataError.message} Username and password are required.`,
+    // });
   }
 
   return User.findOne({ email })
     .select("+password")
     .then((user) => {
       if (!user) {
-        return Promise.reject(new Error("Incorrect email or password"));
+        return Promise.reject(
+          new UnauthorizedError("Incorrect email or password")
+        );
       }
       return bcrypt.compare(password, user.password).then((matched) => {
         if (!matched) {
-          return Promise.reject(new Error("Incorrect email or password"));
+          return Promise.reject(
+            new UnauthorizedError("Incorrect email or password")
+          );
         }
 
         console.log(user);
@@ -40,18 +51,19 @@ const login = (req, res) => {
       });
     })
 
-    .catch((err) => {
-      console.log(err);
-      if (err.message === "Incorrect email or password") {
-        return res
-          .status(invalidEmailOrPassError.status)
-          .send({ message: invalidEmailOrPassError.message });
-      }
+    .catch(next);
+  // .catch((err) => {
+  //   // console.log(err);
+  //   // if (err.message === "Incorrect email or password") {
+  //   //   return res
+  //   //     .status(invalidEmailOrPassError.status)
+  //   //     .send({ message: invalidEmailOrPassError.message });
+  //   // }
 
-      return res
-        .status(defaultError.status)
-        .send({ message: defaultError.message });
-    });
+  //   // return res
+  //   //   .status(defaultError.status)
+  //   //   .send({ message: defaultError.message });
+  // });
 };
 
 const getCurrentUser = (req, res) => {
@@ -67,13 +79,16 @@ const getCurrentUser = (req, res) => {
     .catch((err) => {
       console.log(err);
       if (err.name === "DocumentNotFoundError") {
-        return res
-          .status(dataNotFoundError.status)
-          .send({ message: dataNotFoundError.message });
+        next(new NotFoundError("User Not Found"));
+        // return res
+        //   .status(dataNotFoundError.status)
+        //   .send({ message: dataNotFoundError.message });
+      } else {
+        next(err);
       }
-      return res
-        .status(defaultError.status)
-        .send({ message: defaultError.message });
+      // return res
+      //   .status(defaultError.status)
+      //   .send({ message: defaultError.message });
     });
 };
 
@@ -93,18 +108,22 @@ const updateProfile = (req, res) => {
     .catch((err) => {
       console.log(err);
       if (err.name === "CastError") {
-        res
-          .status(dataNotFoundError.status)
-          .send({ message: dataNotFoundError.message });
+        next(new NotFoundError("Data Not Found"));
+        // res
+        //   .status(dataNotFoundError.status)
+        //   .send({ message: dataNotFoundError.message });
       }
       if (err.name === "ValidationError") {
-        return res.status(invalidDataError.status).send({
-          message: invalidDataError.message,
-        });
+        next(new BadRequestError("Error: Invalid Data."));
+        // return res.status(invalidDataError.status).send({
+        //   message: invalidDataError.message,
+        // });
+      } else {
+        next(err);
       }
-      return res
-        .status(defaultError.status)
-        .send({ message: defaultError.message });
+      // return res
+      //   .status(defaultError.status)
+      //   .send({ message: defaultError.message });
     });
 };
 
@@ -115,17 +134,19 @@ const createUser = (req, res) => {
   console.log(name, avatar, email);
 
   if (!email) {
-    return res
-      .status(invalidDataError.status)
-      .send({ message: invalidDataError.message });
+    next(new BadRequestError("Email is Required"));
+    // return res
+    //   .status(invalidDataError.status)
+    //   .send({ message: invalidDataError.message });
   }
 
   return User.findOne({ email })
     .then((user) => {
       if (user) {
-        return res
-          .status(duplicateError.status)
-          .send({ message: duplicateError.message });
+        next(new ConflictError("An account for this email already exists"));
+        // return res
+        //   .status(duplicateError.status)
+        //   .send({ message: duplicateError.message });
       }
       return bcrypt.hash(req.body.password, 10).then((hash) =>
         User.create({ name, avatar, email, password: hash }).then((newUser) =>
@@ -141,17 +162,20 @@ const createUser = (req, res) => {
       console.error(err);
       console.log(err.name);
       if (err.name === "ValidationError") {
-        return res.status(invalidDataError.status).send({
-          message: `${invalidDataError.message} Information must meet required parameters`,
-        });
+        next(new UnauthorizedError("Error: Invalid Data"));
+        // return res.status(invalidDataError.status).send({
+        //   message: `${invalidDataError.message} Information must meet required parameters`,
+        // });
+      } else {
+        next(err);
       }
-      return res
-        .status(defaultError.status)
-        .send({ message: defaultError.message });
-    })
-    .catch(() =>
-      res.status(defaultError.status).send({ message: defaultError.message })
-    );
+      // return res
+      //   .status(defaultError.status)
+      //   .send({ message: defaultError.message });
+    });
+  // .catch(() =>
+  //   res.status(defaultError.status).send({ message: defaultError.message })
+  // );
 };
 
 module.exports = {

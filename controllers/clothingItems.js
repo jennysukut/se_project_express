@@ -1,3 +1,6 @@
+const BadRequestError = require("../errors/bad-request-err");
+const ForbiddenError = require("../errors/forbidden-err");
+const NotFoundError = require("../errors/not-found-err");
 const ClothingItem = require("../models/clothingItem");
 const {
   invalidDataError,
@@ -13,10 +16,11 @@ const getClothingItems = (req, res) => {
     })
     .catch((err) => {
       console.error(err);
-      console.log(err.name);
-      return res.status(defaultError.status).send({
-        message: defaultError.message,
-      });
+      next(err);
+      // console.log(err.name);
+      // return res.status(defaultError.status).send({
+      //   message: defaultError.message,
+      // });
     });
 };
 
@@ -31,13 +35,16 @@ const createClothingItem = (req, res) => {
       console.error(err);
       console.log(err.name);
       if (err.name === "ValidationError") {
-        return res.status(invalidDataError.status).send({
-          message: invalidDataError.message,
-        });
+        next(new BadRequestError("Error: Invalid Data"));
+        // return res.status(invalidDataError.status).send({
+        //   message: invalidDataError.message,
+        // });
+      } else {
+        next(err);
       }
-      return res
-        .status(defaultError.status)
-        .send({ message: defaultError.message });
+      // return res
+      //   .status(defaultError.status)
+      //   .send({ message: defaultError.message });
     });
 };
 
@@ -49,9 +56,10 @@ const deleteClothingItem = (req, res) => {
     .orFail()
     .then((item) => {
       if (String(item.owner) !== req.user._id) {
-        return res
-          .status(forbiddenError.status)
-          .send({ messaage: forbiddenError.message });
+        next(new ForbiddenError("This action is not authorized."));
+        // return res
+        //   .status(forbiddenError.status)
+        //   .send({ messaage: forbiddenError.message });
       }
       return item
         .deleteOne()
@@ -61,18 +69,22 @@ const deleteClothingItem = (req, res) => {
       console.error(err);
       console.log(err.name);
       if (err.name === "CastError") {
-        return res
-          .status(invalidDataError.status)
-          .send({ message: invalidDataError.message });
+        next(new BadRequestError("Error: Invalid Data"));
+        // return res
+        //   .status(invalidDataError.status)
+        //   .send({ message: invalidDataError.message });
       }
       if (err.name === "DocumentNotFoundError") {
-        return res
-          .status(dataNotFoundError.status)
-          .send({ message: dataNotFoundError.message });
+        next(new NotFoundError("Data Not Found"));
+        // return res
+        //   .status(dataNotFoundError.status)
+        //   .send({ message: dataNotFoundError.message });
+      } else {
+        next(err);
       }
-      return res.status(defaultError.status).send({
-        message: defaultError.message,
-      });
+      // return res.status(defaultError.status).send({
+      //   message: defaultError.message,
+      // });
     });
 
   // if (owner === _id) {
