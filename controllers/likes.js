@@ -31,21 +31,12 @@ const likeItem = (req, res) => {
       console.log(err.name);
       if (err.name === "CastError") {
         next(new BadRequestError("Error: Invalid Data"));
-        // return res
-        //   .status(invalidDataError.status)
-        //   .send({ message: invalidDataError.message });
       }
       if (err.name === "Error") {
         next(new NotFoundError("Data Not Found"));
-        // return res
-        //   .status(dataNotFoundError.status)
-        //   .send({ message: dataNotFoundError.message });
       } else {
         next(err);
       }
-      // return res.status(defaultError.status).send({
-      //   message: defaultError.message,
-      // });
     });
 };
 
@@ -71,21 +62,12 @@ const dislikeItem = (req, res) => {
       console.log(err.name);
       if (err.name === "CastError") {
         next(new BadRequestError("Error: Invalid Data"));
-        // return res
-        //   .status(invalidDataError.status)
-        //   .send({ message: invalidDataError.message });
       }
       if (err.name === "Error") {
         next(new NotFoundError("Data Not Found"));
-        // return res
-        //   .status(dataNotFoundError.status)
-        //   .send({ message: dataNotFoundError.message });
       } else {
         next(err);
       }
-      // return res.status(defaultError.status).send({
-      //   message: defaultError.message,
-      // });
     });
 };
 
