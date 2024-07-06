@@ -9,7 +9,7 @@ const {
   forbiddenError,
 } = require("../utils/errors");
 
-const getClothingItems = (req, res) => {
+const getClothingItems = (req, res, next) => {
   ClothingItem.find({})
     .then((items) => {
       res.status(200).send(items);
@@ -20,7 +20,7 @@ const getClothingItems = (req, res) => {
     });
 };
 
-const createClothingItem = (req, res) => {
+const createClothingItem = (req, res, next) => {
   console.log("trying to create an item");
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
@@ -38,7 +38,7 @@ const createClothingItem = (req, res) => {
     });
 };
 
-const deleteClothingItem = (req, res) => {
+const deleteClothingItem = (req, res, next) => {
   console.log("trying to delete item");
   const { itemId } = req.params;
 
@@ -46,7 +46,7 @@ const deleteClothingItem = (req, res) => {
     .orFail()
     .then((item) => {
       if (String(item.owner) !== req.user._id) {
-        next(new ForbiddenError("This action is not authorized."));
+        return next(new ForbiddenError("This action is not authorized."));
       }
       return item
         .deleteOne()

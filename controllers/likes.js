@@ -7,7 +7,7 @@ const {
   dataNotFoundError,
 } = require("../utils/errors");
 
-const likeItem = (req, res) => {
+const likeItem = (req, res, next) => {
   console.log("trying to like an item");
   const { itemId } = req.params;
   console.log(itemId);
@@ -40,7 +40,7 @@ const likeItem = (req, res) => {
     });
 };
 
-const dislikeItem = (req, res) => {
+const dislikeItem = (req, res, next) => {
   const { itemId } = req.params;
   console.log(itemId);
 

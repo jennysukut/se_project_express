@@ -51,7 +51,7 @@ const login = (req, res, next) => {
     .catch(next);
 };
 
-const getCurrentUser = (req, res) => {
+const getCurrentUser = (req, res, next) => {
   console.log("trying to get current user");
   const { _id } = req.user;
   console.log(_id);
@@ -64,14 +64,14 @@ const getCurrentUser = (req, res) => {
     .catch((err) => {
       console.log(err);
       if (err.name === "DocumentNotFoundError") {
-        next(new NotFoundError("User Not Found"));
+        return next(new NotFoundError("User Not Found"));
       } else {
         next(err);
       }
     });
 };
 
-const updateProfile = (req, res) => {
+const updateProfile = (req, res, next) => {
   console.log("trying to update profile");
 
   const { name, avatar } = req.body;
@@ -81,16 +81,16 @@ const updateProfile = (req, res) => {
   User.findByIdAndUpdate(
     _id,
     { name, avatar },
-    { new: true, runValidator: true }
+    { new: true, runValidators: true }
   )
     .then((user) => res.status(200).send({ user }))
     .catch((err) => {
       console.log(err);
       if (err.name === "CastError") {
-        next(new NotFoundError("Data Not Found"));
+        return next(new NotFoundError("Data Not Found"));
       }
       if (err.name === "ValidationError") {
-        next(new BadRequestError("Error: Invalid Data."));
+        return next(new BadRequestError("Error: Invalid Data."));
       } else {
         next(err);
       }
@@ -110,7 +110,9 @@ const createUser = (req, res, next) => {
   return User.findOne({ email })
     .then((user) => {
       if (user) {
-        next(new ConflictError("An account for this email already exists"));
+        return next(
+          new ConflictError("An account for this email already exists")
+        );
       }
       return bcrypt.hash(req.body.password, 10).then((hash) =>
         User.create({ name, avatar, email, password: hash }).then((newUser) =>
@@ -126,7 +128,7 @@ const createUser = (req, res, next) => {
       console.error(err);
       console.log(err.name);
       if (err.name === "ValidationError") {
-        next(new UnauthorizedError("Error: Invalid Data"));
+        return next(new BadRequestError("Error: Invalid Data"));
       } else {
         next(err);
       }

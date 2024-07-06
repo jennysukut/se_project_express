@@ -25,3 +25,5 @@ module.exports = {
     "no-unused-vars": ["error", { argsIgnorePattern: "next" }],
   },
 };
+
+//this version of eslint is older and I'm having difficulty migrating to the newest version. See if there's a way to migrate or reinstall new version.

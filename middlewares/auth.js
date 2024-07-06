@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/config");
 const { invalidEmailOrPassError } = require("../utils/errors");
+const UnauthorizedError = require("../errors/unauthorized-err");
 
 const auth = (req, res, next) => {
   console.log("trying auth");
@@ -8,9 +9,7 @@ const auth = (req, res, next) => {
   console.log(authorization);
 
   if (!authorization || !authorization.startsWith("Bearer")) {
-    return res
-      .status(invalidEmailOrPassError.status)
-      .send({ message: invalidEmailOrPassError.message });
+    return next(new UnauthorizedError("This user is not authorized."));
   }
 
   const token = authorization.replace("Bearer ", "");
@@ -21,9 +20,7 @@ const auth = (req, res, next) => {
     console.log("trying at jwt verify");
     payload = jwt.verify(token, JWT_SECRET);
   } catch (err) {
-    return res.status(invalidEmailOrPassError.status).send({
-      message: invalidEmailOrPassError.message,
-    });
+    return next(new UnauthorizedError("This user is not authorized."));
   }
   console.log(payload);
   req.user = payload;
