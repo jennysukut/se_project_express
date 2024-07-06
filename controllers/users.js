@@ -3,17 +3,9 @@ const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/config");
 
 const User = require("../models/user");
-const {
-  invalidDataError,
-  defaultError,
-  dataNotFoundError,
-  invalidEmailOrPassError,
-  duplicateError,
-} = require("../utils/errors");
 
 const BadRequestError = require("../errors/bad-request-err");
 const ConflictError = require("../errors/conflict-err");
-const ForbiddenError = require("../errors/forbidden-err");
 const NotFoundError = require("../errors/not-found-err");
 const UnauthorizedError = require("../errors/unauthorized-err");
 
@@ -65,9 +57,8 @@ const getCurrentUser = (req, res, next) => {
       console.log(err);
       if (err.name === "DocumentNotFoundError") {
         return next(new NotFoundError("User Not Found"));
-      } else {
-        next(err);
       }
+        return next(err);
     });
 };
 
@@ -91,9 +82,8 @@ const updateProfile = (req, res, next) => {
       }
       if (err.name === "ValidationError") {
         return next(new BadRequestError("Error: Invalid Data."));
-      } else {
-        next(err);
       }
+        return next(err);
     });
 };
 
@@ -104,7 +94,7 @@ const createUser = (req, res, next) => {
   console.log(name, avatar, email);
 
   if (!email) {
-    next(new BadRequestError("Email is Required"));
+     return next(new BadRequestError("Email is Required"));
   }
 
   return User.findOne({ email })
@@ -129,9 +119,8 @@ const createUser = (req, res, next) => {
       console.log(err.name);
       if (err.name === "ValidationError") {
         return next(new BadRequestError("Error: Invalid Data"));
-      } else {
-        next(err);
       }
+        return next(err);
     });
 };
 

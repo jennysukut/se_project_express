@@ -1,11 +1,6 @@
 const BadRequestError = require("../errors/bad-request-err");
 const NotFoundError = require("../errors/not-found-err");
 const ClothingItem = require("../models/clothingItem");
-const {
-  invalidDataError,
-  defaultError,
-  dataNotFoundError,
-} = require("../utils/errors");
 
 const likeItem = (req, res, next) => {
   console.log("trying to like an item");
