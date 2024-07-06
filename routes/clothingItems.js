@@ -5,7 +5,7 @@ const {
   deleteClothingItem,
 } = require("../controllers/clothingItems");
 const auth = require("../middlewares/auth");
-const validateCardBody = require("../middlewares/validation");
+const { validateCardBody } = require("../middlewares/validation");
 
 router.get("/", getClothingItems);
 router.post("/", auth, validateCardBody, createClothingItem); // add celebrate scheme here to validate parameters of this request?
